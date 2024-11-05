@@ -84,7 +84,7 @@ public class SimetricaToolKit {
         byte[] computedHmac = hmac.doFinal(ciphertext);
 
         if (!MessageDigest.isEqual(hmacValue, computedHmac)) {
-            throw new SecurityException("HMAC validation failed.");
+            throw new SecurityException("HMAC ERROR");
         }
 
         // Configurar AES CBC con la clave de cifrado y el IV para descifrado

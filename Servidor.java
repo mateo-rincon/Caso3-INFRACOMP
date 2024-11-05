@@ -27,7 +27,7 @@ public class Servidor {
     
     public void startServer() throws IOException{
         try  {
-            ss = new ServerSocket(5000);
+            ss = new ServerSocket(50000);
             System.out.println("Servidor en espera de conexiones...");
 
         } catch (Exception e) {
