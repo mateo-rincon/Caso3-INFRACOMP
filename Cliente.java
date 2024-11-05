@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.InvalidKeyException;
@@ -18,7 +17,7 @@ import java.security.spec.X509EncodedKeySpec;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
-public class Cliente {
+public class Cliente extends Thread{
     private static final String HOST = "localhost";
     private static final int PUERTO = 50000;
     private PublicKey publicKey;
@@ -30,8 +29,11 @@ public class Cliente {
     private BigInteger llaveMaestra; // Clave compartida con el servidor
     private ObjectInputStream in;
     private ObjectOutputStream out;
+    private int id;
 
-    
+    public Cliente(int id){
+        this.id=id;
+    }
 
     public void loadPublicKey() throws Exception {
         // Leer la llave pública
@@ -124,11 +126,10 @@ public class Cliente {
     }
 
 
-
-    public static void main(String []args) throws UnknownHostException, IOException {
-        Cliente c= new Cliente();
+    @Override
+    public void run(){
         try {
-            c.loadPublicKey();
+            loadPublicKey();
             System.out.println("----Llave publica leida-----");
         } catch (Exception e) {
             // TODO Auto-generated catch block
@@ -136,9 +137,9 @@ public class Cliente {
             System.out.println("Error leyendo llave publica");
         }
 
-        c.establecerConexion("Hola Servidor");
+        establecerConexion("Hola Servidor");
         try {
-            c.diffieHellman();
+            diffieHellman();
         } catch (InvalidKeyException | ClassNotFoundException | IllegalBlockSizeException | BadPaddingException
                 | NoSuchAlgorithmException | NoSuchPaddingException | IOException e) {
             // TODO Auto-generated catch block
@@ -146,8 +147,11 @@ public class Cliente {
             System.out.println("ERROR EN DIFFIE HELLMAN");
         }
 
-        c.leerMensajeCifrado();
+        leerMensajeCifrado();
+
 
     }
+
+       
 }
 
