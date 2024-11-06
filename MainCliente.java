@@ -35,7 +35,7 @@ public class MainCliente {
             System.out.println("Bienvenido al menu del cliente, seleccione una opcion: ");
             System.out.println("Opcion 1: Determinar numero de clientes");
             System.out.println("Opcion 2: Iniciar clientes");
-            System.out.println("Opcion 4: Salir");
+            System.out.println("Opcion 3: Salir");
 
             try {
                 String opcion=reader.readLine();

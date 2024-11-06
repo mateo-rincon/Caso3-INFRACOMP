@@ -28,6 +28,10 @@ public class ThreadServidor extends Thread {
     private static final BigInteger G = new BigInteger("2"); // Valor común, ejemplo simplificado
     private static final BigInteger P = new BigInteger("FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD1"+ "29024E088A67CC74020BBEA63B139B22514A08798E3404DDE"+ "FFFFFFFFFFFFFFFF", 16); // Ejemplo de número primo grande
     
+    private long tReto;
+    private long tDH;
+    private long tConsulta;
+    
     //private BigInteger G = new BigInteger(1024, new Random());
     //private BigInteger P = BigInteger.probablePrime(1024, new Random());
 
@@ -45,17 +49,24 @@ public class ThreadServidor extends Thread {
 
     @Override
     public void run() {
-        
+        long inicio = System.currentTimeMillis();
         establecerConexion();
+        long fin = System.currentTimeMillis();
+        tReto=(fin-inicio);
         try {
+            inicio = System.currentTimeMillis();
             diffieHellman();
+            fin = System.currentTimeMillis();
+            tDH=(fin-inicio);
         } catch (InvalidKeyException | ClassNotFoundException | NoSuchAlgorithmException | NoSuchPaddingException
                 | IllegalBlockSizeException | BadPaddingException | IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         } 
-
+        inicio = System.currentTimeMillis();
         mandarMensajeCifrado(String.valueOf(this.estado));
+        fin = System.currentTimeMillis();
+        tConsulta=(fin-inicio);
         try {
             clientSocket.close();
             in.close();
@@ -65,11 +76,13 @@ public class ThreadServidor extends Thread {
             e.printStackTrace();
         }
         
+        System.out.println("Tiempo para verificar reto servidor "+id +": "+tReto+" ms");
+        System.out.println("Tiempo para Diffie Helman servidor "+id +": "+tDH +" ms");
+        System.out.println("Tiempo para hacer consulta servidor "+id +": "+tConsulta+" ms");
     }
 
     public void establecerConexion(){
         try {
-
             System.out.println("Cliente conectado: " + clientSocket.getRemoteSocketAddress()+ "en thread delegado No: "+id);
 
             // Leer el mensaje cifrado del cliente
