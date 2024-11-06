@@ -14,14 +14,22 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.HashMap;
 import java.util.Map;
-
+import java.util.List;
+import java.util.ArrayList;
 public class Servidor {
     private PublicKey publicKey;
     private PrivateKey privateKey;
     private KeyGenerator generador;
     private int numeroThreads=0;
+    private List<ThreadServidor> delegados = new ArrayList<>();
     private Map<String, Paquete> tabla= new HashMap<>();
+    private static volatile boolean continuar = true;
+    private int cantServidores;
     ServerSocket ss=null;
+
+    private long tReto;
+    private long tDH;
+    private long tConsulta;
 
     public Servidor(KeyGenerator g){
         this.generador=g;
@@ -46,8 +54,8 @@ public class Servidor {
             e.printStackTrace();
         }
 
-        while (true) {
-            // Aceptar conexión entrante
+        while(continuar){
+
             Socket clientSocket = ss.accept();
 
             // Crear un delegado para el cliente y ejecutar en un nuevo hilo
@@ -56,10 +64,26 @@ public class Servidor {
 
             numeroThreads++;
             delegado.start();
+            delegados.add(delegado);
+            if(numeroThreads>=cantServidores){
+                continuar=false;
+            }
+
         }
+        
+        
         //ss.close();
         
         
+        for (ThreadServidor delegado : delegados) {
+            try {
+                delegado.join();
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        System.out.println("------Servidor terminado------");
     }
 
 
@@ -108,14 +132,35 @@ public class Servidor {
         }
     }
 
+    public void selectNumero(){
+        BufferedReader reader= new BufferedReader(new InputStreamReader(System.in));
+        System.out.println("Introduzca el numero de clientes: ");
+        try {
+            cantServidores=Integer.parseInt(reader.readLine());
+        } catch (NumberFormatException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public synchronized void sumarTReto(Long x){
+        tReto+=x;
+    }
+    public synchronized void sumarTDH(Long x){
+        tDH+=x;
+    }
+    public synchronized void sumarTConsulta(Long x){
+        tConsulta+=x;
+    }
+
 
     public void printMenu(){
         boolean continuar=true;
         while(continuar){
             System.out.println("Bienvenido al menu del servidor, seleccione una opcion: ");
             System.out.println("Opcion 1: Generar llaves asimetricas");
-            System.out.println("Opcion 2: Iniciar servidor");
-            System.out.println("Opcion 3: Salir");
+            System.out.println("Opcion 2: Seleccionar numero de servidores concurrentes");
+            System.out.println("Opcion 3: Iniciar servidor");
+            System.out.println("Opcion 4: Salir");
 
             BufferedReader reader= new BufferedReader(new InputStreamReader(System.in));
             try {
@@ -131,9 +176,15 @@ public class Servidor {
                         }
                         break;
                     case"2":
-                        startServer();
+                        selectNumero();
                         break;
-                    case "3":
+                    case"3":
+                        startServer();
+                        System.out.println("Tiempo total de servidores en confirmar el RETO: "+tReto+" ms");
+                        System.out.println("Tiempo total de servidores en hacer Diffie Helman: "+tDH+" ms");
+                        System.out.println("Tiempo total de servidores en hacer consulta de paquetes: "+tConsulta+" ms");
+                        break;
+                    case "4":
                         continuar=false;
                         System.out.println("------EJECUCION FINALIZADA-----");
                         break;
