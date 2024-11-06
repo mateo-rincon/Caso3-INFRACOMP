@@ -13,6 +13,7 @@ import java.security.PrivateKey;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
+//import java.util.Random;
 
 public class ThreadServidor extends Thread {
     private Socket clientSocket;
@@ -23,9 +24,11 @@ public class ThreadServidor extends Thread {
     private SimetricaToolKit smToolKit;
 
     private static final BigInteger G = new BigInteger("2"); // Valor común, ejemplo simplificado
-    private static final BigInteger P = new BigInteger("FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD1"
-                                                       + "29024E088A67CC74020BBEA63B139B22514A08798E3404DDE"
-                                                       + "FFFFFFFFFFFFFFFF", 16); // Ejemplo de número primo grande
+    private static final BigInteger P = new BigInteger("FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD1"+ "29024E088A67CC74020BBEA63B139B22514A08798E3404DDE"+ "FFFFFFFFFFFFFFFF", 16); // Ejemplo de número primo grande
+    
+    //private BigInteger G = new BigInteger(1024, new Random());
+    //private BigInteger P = BigInteger.probablePrime(1024, new Random());
+
     private BigInteger llaveMaestra; // Clave compartida con el cliente
 
     public ThreadServidor(Socket clientSocket, PrivateKey privateKey, int id) throws IOException {
