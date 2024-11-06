@@ -134,7 +134,7 @@ public class Servidor {
 
     public void selectNumero(){
         BufferedReader reader= new BufferedReader(new InputStreamReader(System.in));
-        System.out.println("Introduzca el numero de clientes: ");
+        System.out.println("Introduzca el numero de servidores concurrentes: ");
         try {
             cantServidores=Integer.parseInt(reader.readLine());
         } catch (NumberFormatException | IOException e) {
