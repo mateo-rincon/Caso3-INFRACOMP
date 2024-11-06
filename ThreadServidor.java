@@ -22,6 +22,8 @@ public class ThreadServidor extends Thread {
     private ObjectInputStream in;
     private ObjectOutputStream out;
     private SimetricaToolKit smToolKit;
+    private Servidor servidor;
+    private int estado;
 
     private static final BigInteger G = new BigInteger("2"); // Valor común, ejemplo simplificado
     private static final BigInteger P = new BigInteger("FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD1"+ "29024E088A67CC74020BBEA63B139B22514A08798E3404DDE"+ "FFFFFFFFFFFFFFFF", 16); // Ejemplo de número primo grande
@@ -31,12 +33,14 @@ public class ThreadServidor extends Thread {
 
     private BigInteger llaveMaestra; // Clave compartida con el cliente
 
-    public ThreadServidor(Socket clientSocket, PrivateKey privateKey, int id) throws IOException {
+    public ThreadServidor(Socket clientSocket, PrivateKey privateKey, int id, Servidor servidor) throws IOException {
         this.clientSocket = clientSocket;
         this.privateKey = privateKey;
-        this.id=id;
-        this.in = new ObjectInputStream(clientSocket.getInputStream());
+        this.id = id;
+        this.servidor = servidor;
+    // Inicialización de flujos
         this.out = new ObjectOutputStream(clientSocket.getOutputStream());
+        this.in = new ObjectInputStream(clientSocket.getInputStream());
     }
 
     @Override
@@ -49,9 +53,9 @@ public class ThreadServidor extends Thread {
                 | IllegalBlockSizeException | BadPaddingException | IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-        }
+        } 
 
-        mandarMensajeCifrado("Mensaje cifrado AAAAAA");
+        mandarMensajeCifrado(String.valueOf(this.estado));
         try {
             clientSocket.close();
             in.close();
@@ -80,11 +84,13 @@ public class ThreadServidor extends Thread {
 
             // Enviar el mensaje desencriptado de vuelta al cliente
             out.writeObject(decryptedMessage);
-
+            
+            //nuevo
+            String llave = new String(decryptedMessage, "UTF-8");
+            estado =servidor.consultarEstado(llave);
+            //nuevo
             String respuesta=(String)in.readObject();
             //System.out.println("Respuesta: "+respuesta);
-            
-            
             
             if (respuesta.equals("OK")){
                 System.out.println("----OK RECIBIDO-----");
@@ -145,4 +151,5 @@ public class ThreadServidor extends Thread {
             e.printStackTrace();
         }
     }
+    
 }

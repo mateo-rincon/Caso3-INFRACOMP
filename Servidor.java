@@ -12,12 +12,15 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Servidor {
     private PublicKey publicKey;
     private PrivateKey privateKey;
     private KeyGenerator generador;
     private int numeroThreads=0;
+    private Map<String, Paquete> tabla= new HashMap<>();
     ServerSocket ss=null;
 
     public Servidor(KeyGenerator g){
@@ -26,6 +29,15 @@ public class Servidor {
 
     
     public void startServer() throws IOException{
+        for (int i = 0; i <32; i++) {
+            String idUsuario = String.valueOf(i);// Usuario único
+            String idPaquete = String.valueOf(i); // Paquete único
+            int estado = i % 6; // Ciclar entre 0 (EN_OFICINA) y 5 (ENTREGADO)
+            // Crear el paquete con los datos generados
+            Paquete paquete = new Paquete(idUsuario, idPaquete, estado);
+            // Agregar el paquete a la tabla
+            agregarPaquete(paquete);
+        }
         try  {
             ss = new ServerSocket(50000);
             System.out.println("Servidor en espera de conexiones...");
@@ -39,7 +51,9 @@ public class Servidor {
             Socket clientSocket = ss.accept();
 
             // Crear un delegado para el cliente y ejecutar en un nuevo hilo
-            ThreadServidor delegado = new ThreadServidor(clientSocket, privateKey, numeroThreads);
+            //ThreadServidor delegado = new ThreadServidor(clientSocket, privateKey, numeroThreads);
+            ThreadServidor delegado = new ThreadServidor(clientSocket, privateKey, numeroThreads, this);
+
             numeroThreads++;
             delegado.start();
         }
@@ -77,6 +91,23 @@ public class Servidor {
     public PrivateKey getPrivateKey() {
         return privateKey;
     }
+
+    public void agregarPaquete(Paquete paquete) {
+        String llave = paquete.getIdUsuario() + "-" + paquete.getIdPaquete();
+        tabla.put(llave, paquete);
+        
+    }
+
+    public synchronized int consultarEstado(String llave) {
+        Paquete paquete = (Paquete) tabla.get(llave);
+
+        if (paquete != null) {
+            return paquete.getEstado();
+        } else {
+            return -1;
+        }
+    }
+
 
     public void printMenu(){
         boolean continuar=true;

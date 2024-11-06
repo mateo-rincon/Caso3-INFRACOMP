@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 public class MainCliente {
 
+    public int numeroClientes;
     private int cantClientes;
     BufferedReader reader= new BufferedReader(new InputStreamReader(System.in));
 
@@ -23,7 +24,7 @@ public class MainCliente {
 
     public void iniciarClientes(){
         for (int i=0;i<cantClientes;i++){
-            Cliente c=new Cliente(i);
+            Cliente c=new Cliente(i,i);
             c.start();
         }
     }
@@ -34,7 +35,7 @@ public class MainCliente {
             System.out.println("Bienvenido al menu del cliente, seleccione una opcion: ");
             System.out.println("Opcion 1: Determinar numero de clientes");
             System.out.println("Opcion 2: Iniciar clientes");
-            System.out.println("Opcion 3: Salir");
+            System.out.println("Opcion 4: Salir");
 
             try {
                 String opcion=reader.readLine();

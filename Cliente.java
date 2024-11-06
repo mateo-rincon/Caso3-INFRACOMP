@@ -30,9 +30,11 @@ public class Cliente extends Thread{
     private ObjectInputStream in;
     private ObjectOutputStream out;
     private int id;
+    private int idPaquete;
 
-    public Cliente(int id){
+    public Cliente(int id, int idPaquete){
         this.id=id;
+        this.idPaquete=idPaquete;
     }
 
     public void loadPublicKey() throws Exception {
@@ -111,14 +113,32 @@ public class Cliente extends Thread{
         smToolKit=new SimetricaToolKit(llaveMaestra);
     }
 
-    public void leerMensajeCifrado(){
+    public synchronized void leerMensajeCifrado(){
         
         try {
             byte[] encryptedP = (byte[]) in.readObject();
             byte[] bytes=smToolKit.descifrar(encryptedP);
             String mensaje= new String(bytes);
             System.out.println("Lectura de mensaje cifrado simetricamente: ");
-            System.out.println("Mensaje: "+mensaje);
+            String nuevoMensaje="";
+            if (mensaje.equals("0")) {
+                nuevoMensaje = "EN_OFICINA";
+            } else if (mensaje.equals("1")) {
+                nuevoMensaje = "RECOGIDO";
+            } else if (mensaje.equals("2")) {
+                nuevoMensaje = "EN_CLASIFICACION";
+            } else if (mensaje.equals("3")) {
+                nuevoMensaje = "DESPACHADO";
+            } else if (mensaje.equals("4")) {
+                nuevoMensaje = "EN_ENTREGA";
+            } else if (mensaje.equals("5")) {
+                nuevoMensaje = "ENTREGADO";
+            } else {
+                nuevoMensaje = "DESCONOCIDO";
+            }
+            
+
+            System.out.println("Estado del paquete del clinete con id " + this.id+ ": "+nuevoMensaje);
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -136,8 +156,8 @@ public class Cliente extends Thread{
             //e.printStackTrace();
             System.out.println("Error leyendo llave publica");
         }
-
-        establecerConexion("Hola Servidor");
+        String llave= String.valueOf(id)+"-"+String.valueOf(idPaquete);
+        establecerConexion(llave);
         try {
             diffieHellman();
         } catch (InvalidKeyException | ClassNotFoundException | IllegalBlockSizeException | BadPaddingException
