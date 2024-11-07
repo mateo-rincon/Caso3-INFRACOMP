@@ -75,10 +75,14 @@ public class ThreadServidor extends Thread {
             
             e.printStackTrace();
         }
+
+        servidor.sumarTReto(tReto);
+        servidor.sumarTDH(tDH);
+        servidor.sumarTConsulta(tConsulta);
         
-        System.out.println("Tiempo para verificar reto servidor "+id +": "+tReto+" ms");
-        System.out.println("Tiempo para Diffie Helman servidor "+id +": "+tDH +" ms");
-        System.out.println("Tiempo para hacer consulta servidor "+id +": "+tConsulta+" ms");
+        //System.out.println("Tiempo para verificar reto servidor "+id +": "+tReto+" ms");
+        //System.out.println("Tiempo para Diffie Helman servidor "+id +": "+tDH +" ms");
+        //System.out.println("Tiempo para hacer consulta servidor "+id +": "+tConsulta+" ms");
     }
 
     public void establecerConexion(){
