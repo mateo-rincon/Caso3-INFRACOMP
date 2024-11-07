@@ -1,11 +1,7 @@
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.math.BigInteger;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -13,11 +9,16 @@ import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
-import java.security.spec.X509EncodedKeySpec;
-import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.security.spec.X509EncodedKeySpec;
 
-public class Cliente extends Thread{
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+
+public class ClienteIterativo {
+    private int cantidad_clientes;
     private static final String HOST = "localhost";
     private static final int PUERTO = 50000;
     private PublicKey publicKey;
@@ -29,14 +30,68 @@ public class Cliente extends Thread{
     private BigInteger llaveMaestra; // Clave compartida con el servidor
     private ObjectInputStream in;
     private ObjectOutputStream out;
-    private int id;
-    private int idPaquete;
+    private long totalDifi;
+    private long totalVeri;
+    private long totalReto;
 
-    public Cliente(int id, int idPaquete){
-        this.id=id;
-        this.idPaquete=idPaquete;
+
+    public ClienteIterativo( int cantidad_clientes){
+        this.cantidad_clientes=cantidad_clientes;
     }
 
+    public void proceso(){
+        
+        totalDifi=0;
+        totalVeri=0;
+        for (int i=0;i<cantidad_clientes;i++){
+            int id= i;
+            int idPaquete=i;
+            System.out.println("Cliente: "+i);
+            try {
+                loadPublicKey();
+                System.out.println("----Llave publica leida-----");
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                //e.printStackTrace();
+                System.out.println("Error leyendo llave publica");
+            }
+            String llave= String.valueOf(id)+"-"+String.valueOf(idPaquete);
+            long inicioReto = System.currentTimeMillis();
+            establecerConexion(llave);
+            long finalReto = System.currentTimeMillis(); 
+            totalReto=(int) (totalReto+(finalReto - inicioReto));
+
+            try {
+                long inicioDH = System.currentTimeMillis();
+                diffieHellman();
+                long finDH = System.currentTimeMillis();
+                totalDifi=(int) (totalDifi+(finDH - inicioDH));
+            } catch (InvalidKeyException | ClassNotFoundException | IllegalBlockSizeException | BadPaddingException
+                    | NoSuchAlgorithmException | NoSuchPaddingException | IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                System.out.println("ERROR EN DIFFIE HELLMAN");
+            }
+            long inicioConsulta = System.currentTimeMillis();
+            leerMensajeCifrado();
+            long finConsulta = System.currentTimeMillis();
+            totalVeri=(int) (totalVeri+(finConsulta - inicioConsulta));
+
+        }
+        
+        try {
+            socket.close();
+            in.close();
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println("");
+        System.out.println("Tiempo total del reto: " + (totalReto) + " ms");
+        System.out.println("Tiempo para generar G, P y G^x: " + (totalDifi) + " ms");
+        System.out.println("Tiempo para verificar la consulta: " + (totalVeri) + " ms");
+        }
+    
     public void loadPublicKey() throws Exception {
         // Leer la llave pública
         byte[] publicKeyBytes = Files.readAllBytes(Paths.get("llaves/publicKey.key"));
@@ -138,40 +193,10 @@ public class Cliente extends Thread{
             }
             
 
-            System.out.println("Estado del paquete del cliente con id " + this.id+ ": "+nuevoMensaje);
+            System.out.println("Estado del paquete del cliente: "+nuevoMensaje);
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
-
-
-    @Override
-    public void run(){
-        try {
-            loadPublicKey();
-            System.out.println("----Llave publica leida-----");
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            //e.printStackTrace();
-            System.out.println("Error leyendo llave publica");
-        }
-        String llave= String.valueOf(id)+"-"+String.valueOf(idPaquete);
-        establecerConexion(llave);
-        try {
-            diffieHellman();
-        } catch (InvalidKeyException | ClassNotFoundException | IllegalBlockSizeException | BadPaddingException
-                | NoSuchAlgorithmException | NoSuchPaddingException | IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            System.out.println("ERROR EN DIFFIE HELLMAN");
-        }
-
-        leerMensajeCifrado();
-
-
-    }
-
-       
 }
-

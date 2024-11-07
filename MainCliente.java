@@ -28,14 +28,19 @@ public class MainCliente {
             c.start();
         }
     }
+    public void clientesIterativoss(){
+        ClienteIterativo c =new ClienteIterativo(32);
+        c.proceso();
+    }
 
     public void printMenu(){
         boolean continuar=true;
         while(continuar){
             System.out.println("Bienvenido al menu del cliente, seleccione una opcion: ");
             System.out.println("Opcion 1: Determinar numero de clientes");
-            System.out.println("Opcion 2: Iniciar clientes");
-            System.out.println("Opcion 3: Salir");
+            System.out.println("Opcion 2: Iniciar clientes concurrentes");
+            System.out.println("Opcion 3: Iniciar clientes iterativos");
+            System.out.println("Opcion 4: Salir");
 
             try {
                 String opcion=reader.readLine();
@@ -46,7 +51,10 @@ public class MainCliente {
                     case"2":
                         iniciarClientes();
                         break;
-                    case "3":
+                    case"3":
+                        clientesIterativoss();
+                        break;
+                    case "4":
                         continuar=false;
                         System.out.println("------EJECUCION FINALIZADA-----");
                         break;
